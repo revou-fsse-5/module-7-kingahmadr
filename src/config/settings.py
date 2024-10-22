@@ -86,7 +86,8 @@ def create_app(settings_conf=None):
     # app.add_url_rule('/v2/employee/<int:employee_id>', view_func=employee_view, methods=['GET', 'DELETE', 'PUT'])
 
     login_view = LoginView.as_view('login_view')
-    app.add_url_rule('/v2/login', view_func=login_view, methods=['POST'])
+    app.add_url_rule('/v2/login', view_func=login_view, methods=['GET','POST'])
+    app.add_url_rule('/v2/login/<int:user_id>', view_func=login_view, methods=['GET'])
 
     register_view = RegisterView.as_view('register_view')
     app.add_url_rule('/v2/register', view_func=register_view, methods=['POST'])

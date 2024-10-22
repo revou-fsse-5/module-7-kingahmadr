@@ -8,6 +8,54 @@ from src.services.AuthService import Authentication
 from werkzeug.security import check_password_hash
 
 class LoginView(MethodView):
+    def get(self, user_id=None):
+        # fields = ['id', 'email', 'password_hash']
+
+        if user_id is None:
+            # users = User.query.all()
+            user_details = (
+                    db.session.query(User.id, User.email, User.password_hash, Role.slug)
+                    .join(UserRole, User.id == UserRole.user_id)
+                    .join(Role, UserRole.role_id == Role.id)    
+                    .all()
+                )
+            # results = [{field: getattr(user, field) for field in fields} for user in users]
+            results = []
+            for row in user_details:
+                results.append({
+                    "id": row[0],
+                    "email": row[1],
+                    "password_hash": row[2],
+                    "role": row[3]
+
+                })
+
+            return jsonify({"Users": results})
+        else:
+            user = db.session.get(User, user_id)
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+
+            # user_data = {field: getattr(user, field) for field in fields}
+            user_detail = (
+                db.session.query(User.id, User.email, User.password_hash, Role.slug)
+                .join(UserRole, User.id == UserRole.user_id)
+                .join(Role, UserRole.role_id == Role.id)
+                .filter(User.id == user_id)
+                .all()
+            )
+            results = []
+            for row in user_detail:
+                results.append({
+                    "id": row[0],
+                    "email": row[1],
+                    "password_hash": row[2],
+                    "role": row[3]
+
+                })
+
+            return jsonify(results)
+        
     def post(self):
         if not request.is_json:
             return {"msg": "Missing JSON in request"}, 400
