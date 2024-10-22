@@ -7,8 +7,8 @@ class User(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    role = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(), nullable=False)
+    # role = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.Text(), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
@@ -22,6 +22,7 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
     def has_role(self, role):
         return bool(
             Role.query
@@ -44,6 +45,6 @@ class Role(db.Model):
 class UserRole(db.Model):
     __tablename__ = 'user_roles'
 
-    user_id = id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
-    role_id = id = db.Column(db.Integer, db.ForeignKey("roles.id"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), primary_key=True)
     

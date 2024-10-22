@@ -2,6 +2,7 @@ from flask.views import MethodView
 from flask import jsonify, request
 from flasgger import swag_from
 from src.models.UserRoleModel import User, Role, UserRole
+from src.config.settings import db
 from src.services.AuthService import Authentication
 
 from werkzeug.security import check_password_hash
@@ -24,7 +25,18 @@ class LoginView(MethodView):
             return jsonify({"error": "Invalid email or password!"}), 400
         
         # Generate JWT token for the user
-        token = Authentication.create_jwt_token(user.id, user.role)
+
+        role_slugs = (
+            db.session.query(Role.slug, User.email)
+            .join(UserRole, User.id == UserRole.user_id)
+            .join(Role, UserRole.role_id == Role.id)
+            .filter(User.email == email)
+            .all()
+        )
+        slug = ", ".join(row.slug for row in role_slugs)
+        db.session.close_all
+        # token = Authentication.create_jwt_token(user.id, user.role)
+        token = Authentication.create_jwt_token(user.id, slug)
 
         
         return jsonify({

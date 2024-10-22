@@ -3,6 +3,8 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_seeder import FlaskSeeder
+
 import os
 from dotenv import load_dotenv
 from flasgger import Swagger
@@ -13,6 +15,7 @@ load_dotenv()
 # Initialize the database and migration objects (but don't attach them to the app yet)
 db = SQLAlchemy()
 migrate = Migrate()
+seeder = FlaskSeeder()
 
 def create_app(settings_conf=None):
     """Application factory to create a Flask app instance."""
@@ -64,12 +67,15 @@ def create_app(settings_conf=None):
     # Initialize the app with extensions
     db.init_app(app)
     migrate.init_app(app, db)
+    seeder.init_app(app, db)
 
     # Import view
     # from src.router.Animals import AnimalView
     # from src.router.Employees import EmployeeView
-    # from src.router.Login import LoginView
-    # from src.router.Register import RegisterView
+    from src.router.Login import LoginView
+    from src.router.Register import RegisterView
+    from src.router.Review import ReviewView
+    from src.router.TestQuery import TestQueryView
 
     # animal_view = AnimalView.as_view('animal_view')
     # app.add_url_rule('/v2/animal', view_func=animal_view, methods=['GET', 'POST'])
@@ -79,11 +85,18 @@ def create_app(settings_conf=None):
     # app.add_url_rule('/v2/employee', view_func=employee_view, methods=['GET', 'POST'])
     # app.add_url_rule('/v2/employee/<int:employee_id>', view_func=employee_view, methods=['GET', 'DELETE', 'PUT'])
 
-    # login_view = LoginView.as_view('login_view')
-    # app.add_url_rule('/v2/login', view_func=login_view, methods=['POST'])
+    login_view = LoginView.as_view('login_view')
+    app.add_url_rule('/v2/login', view_func=login_view, methods=['POST'])
 
-    # register_view = RegisterView.as_view('register_view')
-    # app.add_url_rule('/v2/register', view_func=register_view, methods=['POST'])
+    register_view = RegisterView.as_view('register_view')
+    app.add_url_rule('/v2/register', view_func=register_view, methods=['POST'])
+    
+    review_view = ReviewView.as_view('review_view')
+    app.add_url_rule('/v2/review', view_func=review_view, methods=['GET','POST'])
+
+    test_query_view = TestQueryView.as_view('test_query_view')
+    app.add_url_rule('/v2/getquery', view_func=test_query_view, methods=['GET'])
+
 
     
     @app.route('/')

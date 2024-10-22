@@ -1,6 +1,6 @@
 from flask.views import MethodView
 from flask import jsonify, request
-from config.settings import db
+from src.config.settings import db
 # from flasgger import swag_from
 from werkzeug.security import generate_password_hash
 from src.services.AuthService import Authentication
@@ -16,8 +16,10 @@ class ReviewView(MethodView):
         # Returning the data as a JSON response
         return jsonify(reviews), 200
     
-    method_decorators = [Authentication.token_required, Authentication.auth_role("admin")]
-    def post(self):
+    # method_decorators = [Authentication.token_required, Authentication.auth_role("admin")]
+    @Authentication.token_required
+    @Authentication.auth_role('admin')  # Only admin can access this
+    def post(self, current_user):
         # Get data from request body (assumed to be in JSON format)
         data = request.get_json()
         
