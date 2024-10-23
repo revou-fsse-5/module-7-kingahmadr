@@ -1,6 +1,6 @@
 # config/settings.py
 
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_seeder import FlaskSeeder
@@ -19,7 +19,12 @@ seeder = FlaskSeeder()
 
 def create_app(settings_conf=None):
     """Application factory to create a Flask app instance."""
-    app = Flask(__name__)
+    template_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'templates')
+    static_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'static')
+
+    app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+    print("Template folder:", template_dir)
+    print("Template folder:", static_dir)
 
     # Swagger configuration for securityDefinitions
     swagger_config = {
@@ -57,43 +62,42 @@ def create_app(settings_conf=None):
    
     # Load configuration
     swagger = Swagger(app, config=swagger_config)
-    # app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{os.getenv('USER_DB')}:{os.getenv('PASSWORD_DB')}@{os.getenv('HOST_DB')}:{os.getenv('PORT_DB')}/{os.getenv('DBNAME')}"
-    # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
     os.environ.setdefault("FLASK_SETTINGS_MODULE", "src.config.prod")
     conf = settings_conf or os.getenv("FLASK_SETTINGS_MODULE")
     app.config.from_object(conf)
     app.config['DEBUG'] = True
+
 
     # Initialize the app with extensions
     db.init_app(app)
     migrate.init_app(app, db)
     seeder.init_app(app, db)
 
-    # Import view
-    # from src.router.Animals import AnimalView
-    # from src.router.Employees import EmployeeView
     from src.router.Login import LoginView
+    from src.router.Logout import LogoutView
+    from src.router.UserFetch import UserFetchView
     from src.router.Register import RegisterView
     from src.router.Review import ReviewView
     from src.router.TestQuery import TestQueryView
 
-    # animal_view = AnimalView.as_view('animal_view')
-    # app.add_url_rule('/v2/animal', view_func=animal_view, methods=['GET', 'POST'])
-    # app.add_url_rule('/v2/animal/<int:animal_id>', view_func=animal_view, methods=['GET','DELETE', 'PUT'])
-
-    # employee_view = EmployeeView.as_view('employee_view')
-    # app.add_url_rule('/v2/employee', view_func=employee_view, methods=['GET', 'POST'])
-    # app.add_url_rule('/v2/employee/<int:employee_id>', view_func=employee_view, methods=['GET', 'DELETE', 'PUT'])
-
     login_view = LoginView.as_view('login_view')
     app.add_url_rule('/v2/login', view_func=login_view, methods=['GET','POST'])
     app.add_url_rule('/v2/login/<int:user_id>', view_func=login_view, methods=['GET'])
+
+    logout_view = LogoutView.as_view('logout_view')
+    app.add_url_rule('/v2/logout', view_func=logout_view, methods=['GET'])
+    
+    user_fetch_view = UserFetchView.as_view('user_fetch_view')
+    app.add_url_rule('/v2/fetch-user', view_func=user_fetch_view, methods=['GET'])
+    app.add_url_rule('/v2/fetch-user/<int:user_id>', view_func=user_fetch_view, methods=['GET'])
 
     register_view = RegisterView.as_view('register_view')
     app.add_url_rule('/v2/register', view_func=register_view, methods=['POST'])
     
     review_view = ReviewView.as_view('review_view')
     app.add_url_rule('/v2/review', view_func=review_view, methods=['GET','POST'])
+    app.add_url_rule('/v2/review/<int:review_id>', view_func=review_view, methods=['GET','PUT','DELETE'])
 
     test_query_view = TestQueryView.as_view('test_query_view')
     app.add_url_rule('/v2/getquery', view_func=test_query_view, methods=['GET'])
@@ -103,5 +107,14 @@ def create_app(settings_conf=None):
     @app.route('/')
     def hello_from_api():
         return 'Mad API v2'
+    
+    @app.route('/create-all-db')
+    def create_all_db():
+        return db.create_all()
+    
+    @app.route('/test-template')
+    def test_template():
+        print("Template folder: ", app.template_folder)
+        return render_template('login.html')
 
     return app

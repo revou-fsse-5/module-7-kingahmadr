@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash
 class RegisterView(MethodView):
     def post(self):
         data = request.json
+        username = data.get('username')
         email = data.get('email')
         password = data.get('password')
         role_name = data.get('role')
@@ -19,7 +20,7 @@ class RegisterView(MethodView):
 
         # Hash the user's password and create a new user
         hashed_password = generate_password_hash(password)
-        new_user = User(email=email, password_hash=hashed_password)
+        new_user = User(username=username, email=email, password_hash=hashed_password)
         
         # Find the role and add to the user
         role = Role.query.filter_by(slug=role_name).first()  # Query role by slug

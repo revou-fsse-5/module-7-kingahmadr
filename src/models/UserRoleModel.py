@@ -6,8 +6,8 @@ class User(db.Model):
     __tablename__ = "users"
     
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False, index=True)
     email = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    # role = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.Text(), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -15,13 +15,7 @@ class User(db.Model):
     roles = db.relationship("Role", secondary="user_roles", back_populates="users")
 
     def __repr__(self):
-        return f'<User {self.email}>'
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return f'<User {self.id, self.username, self.email, self.password_hash}>'
     
     def has_role(self, role):
         return bool(

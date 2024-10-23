@@ -25,6 +25,13 @@ class TestQueryView(MethodView):
         # role_slugs = [row.slug for row in results]
         role_slugs = ", ".join(row.slug for row in results)
         print(f'{role_slugs}')
+        
+        user = User.query.filter_by(email="mamad1@email.com").first()  # Get the user object
+        if user:
+            has_role = user.has_role('admin')  # Pass the 'admin' role to check
+            print(f'has_role: {has_role}')
+        else:
+            print("User not found")
 
         db.session.close()  # Closing the session
 
