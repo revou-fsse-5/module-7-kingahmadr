@@ -15,7 +15,7 @@ class RegisterView(MethodView):
     @swag_from({
     'tags': ['Authentication'],  # Group under Authentication tag
     'summary': 'User registration',
-    'description': 'Endpoint to register a new user with an username, email and password.',
+    'description': 'Endpoint to register a new user with an username, email, password and role.',
     'parameters': [
         {
             'name': 'body',
@@ -36,9 +36,13 @@ class RegisterView(MethodView):
                     'password': {
                         'type': 'string',
                         'example': 'password123'
+                    },
+                    'role': {
+                        'type': 'string',
+                        'example': 'admin'
                     }
                 },
-                'required': ['username','email', 'password']
+                'required': ['username','email', 'password','role']
             }
         }
     ],
