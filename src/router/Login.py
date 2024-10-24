@@ -13,51 +13,133 @@ class LoginView(MethodView):
         msg=''
         return render_template('login.html', msg = msg)
 
+    @swag_from({
+    'tags': ['Authentication'],  # You can adjust the tag name
+    'summary': 'User login',
+    'description': 'Login endpoint that authenticates a user and returns a JWT token.',
+    'parameters': [
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'description': 'Email and password for login',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'email': {
+                        'type': 'string',
+                        'example': 'user@example.com'
+                    },
+                    'password': {
+                        'type': 'string',
+                        'example': 'password123'
+                    }
+                },
+                'required': ['email', 'password']
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Login successful, JWT token returned',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'message': {
+                        'type': 'string',
+                        'example': 'Login successful!'
+                    },
+                    'token': {
+                        'type': 'string',
+                        'example': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
+                    }
+                }
+            }
+        },
+        400: {
+            'description': 'Invalid email or password',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {
+                        'type': 'string',
+                        'example': 'Invalid email or password!'
+                    }
+                }
+            }
+        }
+    }
+})
     def post(self):
-        # if not request.is_json:
-        #     return {"msg": "Missing JSON in request"}, 400
+        if 'email' in request.json and 'password' in request.json:
+            data = request.json
+            email = data.get('email')
+            password = data.get('password')
+            # Find the user by email
+            user = User.query.filter_by(email=email).first()
+
+            if user is None or not check_password_hash(user.password_hash, password):
+                return jsonify({"error": "Invalid email or password!"}), 400
+            
+            # Generate JWT token for the user
+
+            if user:
+                role_slugs = (
+                    db.session.query(Role.slug, User.email)
+                    .join(UserRole, User.id == UserRole.user_id)
+                    .join(Role, UserRole.role_id == Role.id)
+                    .filter(User.email == email)
+                    .all()
+                )
+                slug = ", ".join(row.slug for row in role_slugs)
+                db.session.close_all
+                # token = Authentication.create_jwt_token(user.id, user.role)
+                token = Authentication.create_jwt_token(user.id, slug)
+                
+                    # Create a response
+            response = make_response(jsonify({
+                "message": "Login successful!",
+                "token" : token
+            }), 200)
+
+            response.set_cookie('jwt_token', token, httponly=True, secure=True)
+
+            return response
         
-        # data = request.get_json()
-        # email = data.get('email')
-        # password = data.get('password')
+
 
         if 'email' in request.form and 'password' in request.form:
             email = request.form['email']
             password = request.form['password']
 
-        # if not email or not password:
-        #     return {"msg": "Missing password or email"}, 400
+            # Find the user by email
+            user = User.query.filter_by(email=email).first()
 
-        # Find the user by email
-        user = User.query.filter_by(email=email).first()
-
-        if user is None or not check_password_hash(user.password_hash, password):
-            return jsonify({"error": "Invalid email or password!"}), 400
-        
-        # Generate JWT token for the user
-
-        if user:
-            role_slugs = (
-                db.session.query(Role.slug, User.email)
-                .join(UserRole, User.id == UserRole.user_id)
-                .join(Role, UserRole.role_id == Role.id)
-                .filter(User.email == email)
-                .all()
-            )
-            slug = ", ".join(row.slug for row in role_slugs)
-            db.session.close_all
-            # token = Authentication.create_jwt_token(user.id, user.role)
-            token = Authentication.create_jwt_token(user.id, slug)
+            if user is None or not check_password_hash(user.password_hash, password):
+                return jsonify({"error": "Invalid email or password!"}), 400
             
-                # Create a response
-        response = make_response(jsonify({
-            "message": "Login successful!"
-        }), 200)
+            # Generate JWT token for the user
 
-        response.set_cookie('jwt_token', token, httponly=True, secure=True)
-        
-        # return jsonify({
-        #     "message": "Login successful!",
-        #     "token": token  # Send the token to the client
-        # }), 200
-        return response
+            if user:
+                role_slugs = (
+                    db.session.query(Role.slug, User.email)
+                    .join(UserRole, User.id == UserRole.user_id)
+                    .join(Role, UserRole.role_id == Role.id)
+                    .filter(User.email == email)
+                    .all()
+                )
+                slug = ", ".join(row.slug for row in role_slugs)
+                db.session.close_all
+                # token = Authentication.create_jwt_token(user.id, user.role)
+                token = Authentication.create_jwt_token(user.id, slug)
+                
+                    # Create a response
+            response = make_response(jsonify({
+                "message": "Login successful!"
+            }), 200)
+
+            response.set_cookie('jwt_token', token, httponly=True, secure=True)
+
+            return response
+
+        return jsonify({"error": "Invalid input!"}), 400

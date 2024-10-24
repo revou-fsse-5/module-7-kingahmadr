@@ -24,12 +24,12 @@ def create_app(settings_conf=None):
 
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
     print("Template folder:", template_dir)
-    print("Template folder:", static_dir)
+    print("Static folder:", static_dir)
 
     # Swagger configuration for securityDefinitions
     swagger_config = {
         "swagger": "2.0",
-        "title": "Your API Title",
+        "title": "Mad API Module 7 Assignment",
         "description": "API documentation with JWT authentication",
         "securityDefinitions": {
             "Bearer": {
@@ -93,7 +93,7 @@ def create_app(settings_conf=None):
     app.add_url_rule('/v2/fetch-user/<int:user_id>', view_func=user_fetch_view, methods=['GET'])
 
     register_view = RegisterView.as_view('register_view')
-    app.add_url_rule('/v2/register', view_func=register_view, methods=['POST'])
+    app.add_url_rule('/v2/register', view_func=register_view, methods=['GET','POST'])
     
     review_view = ReviewView.as_view('review_view')
     app.add_url_rule('/v2/review', view_func=review_view, methods=['GET','POST'])
