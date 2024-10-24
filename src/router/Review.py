@@ -3,7 +3,6 @@ from flask import jsonify, request
 from src.config.settings import db
 from src.models.Review import Review
 from flasgger import swag_from
-from werkzeug.security import generate_password_hash
 from src.services.AuthService import Authentication
 
 class ReviewView(MethodView):

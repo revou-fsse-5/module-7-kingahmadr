@@ -9,9 +9,108 @@ from werkzeug.security import check_password_hash
 
 class LoginView(MethodView):
 
-    def get(self):
-        msg=''
-        return render_template('login.html', msg = msg)
+    # def get(self):
+    #     msg=''
+    #     return render_template('login.html', msg = msg)
+    @swag_from({
+            'tags':['Authentication'],
+            'summary':'Get User Data',
+            'parameters':[
+                {
+                    'name': 'user_id',
+                    'in': 'path',
+                    'type': 'integer',
+                    'required': False,
+                    'description': 'ID of the users to retrieve'
+                }
+            ],
+            'responses': {
+                200:{
+                    'description':'user(s) retrived successfully',
+                    'schema':{
+                        'type':'object',
+                        'properties':{
+                            'Users': {
+                                'type':'array',
+                                'items':{
+                                    'type':'object',
+                                    'properties':{
+                                        'id': {
+                                            'type': 'integer',
+                                            'example': 1
+                                        },
+                                        'username': {
+                                            'type':'string',
+                                            'example': 'mamad'
+                                        },
+                                        'email': {
+                                            'type': 'email',
+                                            'example': 'mamad@email.com'
+                                        },
+                                        'password_hash':{
+                                            'type':'string',
+                                            'example':'<Encrypted Password with Hash algorithm>'
+                                        }
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    }
+                },
+                404:{
+                    'description': 'User not found',
+                    'schema':{
+                        'type':'object',
+                        'properties':{
+                            'error':{
+                                'type': 'string',
+                                'example': 'User not found'
+                            }
+                        }
+                    }
+                }
+            }
+
+        })
+    def get(self, user_id=None):
+        user_fields = ['id', 'username','email', 'password_hash']
+
+        if user_id is None:
+            # users = User.query.all()
+            user_details = (
+                    db.session.query(User.id, User.username, User.email, User.password_hash, Role.slug)
+                    .join(UserRole, User.id == UserRole.user_id)
+                    .join(Role, UserRole.role_id == Role.id)    
+                    .all()
+                )
+            # results = [{field: getattr(user, field) for field in fields} for user in users]
+            results = [
+                {**{field: row[i] for i, field in enumerate(user_fields)}, 'role': row[4]}
+                for row in user_details
+            ]
+
+            return jsonify({"Users":results})
+        else:
+            user = db.session.get(User, user_id)
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+
+            # user_data = {field: getattr(user, field) for field in fields}
+            user_detail = (
+                db.session.query(User.id, User.username, User.email, User.password_hash, Role.slug)
+                .join(UserRole, User.id == UserRole.user_id)
+                .join(Role, UserRole.role_id == Role.id)
+                .filter(User.id == user_id)
+                .all()
+            )
+            results = [
+                {**{field: row[i] for i, field in enumerate(user_fields)}, 'role': row[4]}
+                for row in user_detail
+            ]
+            
+
+            return jsonify(results)
 
     @swag_from({
     'tags': ['Authentication'],  # You can adjust the tag name
