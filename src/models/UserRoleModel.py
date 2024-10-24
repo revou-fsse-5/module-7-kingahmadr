@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
 from src.config.settings import db
-from werkzeug.security import generate_password_hash, check_password_hash 
+from email_validator import validate_email, EmailNotValidError
+
+from flask import jsonify, request
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -25,6 +28,24 @@ class User(db.Model):
             .filter(Role.slug == role)
             .count() == 1
         )
+    def email_validation(email_request):
+        
+        try:
+            # Check that the email address is valid
+            emailinfo = validate_email(email_request, check_deliverability=False)
+
+            # Get the normalized form of the email address
+            normalized_email = emailinfo.normalized
+
+            # print(f'{normalized_email}')
+
+            return jsonify({"email": normalized_email}), 200
+
+        except EmailNotValidError as e:
+            # Handle invalid email input with a specific error message
+            # print(str(e))
+            return jsonify({"error": "Invalid email", "message": str(e)}), 400
+
     
 class Role(db.Model):
     __tablename__ = "roles"
