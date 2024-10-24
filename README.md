@@ -30,7 +30,7 @@ URL:
 - Run the docker-compose.yaml on the dockerized directory
 
     ```
-    cd dockerized
+    cd src/dockerized
     docker-compose up -d
     ```
 - Access apidocs URL `http://localhost:5000/apidocs` or `http://127.0.0.1:5000/apidocs`
@@ -38,7 +38,7 @@ URL:
 - `init.sql` contains the initial required database and tables for the apps (`dockerized/init.sql`)
 - Clean up
     ```
-    cd dockerized
+    cd src/dockerized
     docker-compose down -v
     ```
 
@@ -52,6 +52,10 @@ URL:
     2. `cd module-7-kingahmdr`
     3. Run `poetry install`
     4. Adjust the `.env.example` to your `.env` environment config
+    5. Run Flask using this example command:
+        ```
+        flask --app app --env-file .env run --port 5000 --debug
+        ```
 
 ## Connect to the database
 If you use the docker-compose deployment, I have prepared the mysql container in the definition.
