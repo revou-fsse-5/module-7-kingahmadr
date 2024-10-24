@@ -52,10 +52,10 @@ VALUES
 
 -- Insert predefined reviews
 
-INSERT INTO `reviews` (`product`,`rating`,`description`)
+INSERT INTO `reviews` (`product`,`rating`,`description`,`is_deleted`)
 VALUES
-    ('Fan', 4, 'Good to cooling the environments'),
-    ('Laptop', 5, 'Good performance for slightly mobile activity'),
-    ('Smartphone', 4.5, 'Good Perfomance for mobile activity'),
-    ('PC', 5, 'Good Performance to code'),
-    ('Lamp', 1, 'Nothing good'),
+    ('Fan', 4, 'Good to cooling the environments',0),
+    ('Laptop', 5, 'Good performance for slightly mobile activity',0),
+    ('Smartphone', 4.5, 'Good Perfomance for mobile activity',0),
+    ('PC', 5, 'Good Performance to code',0),
+    ('Lamp', 1, 'Nothing good',0);
