@@ -115,30 +115,35 @@ class RegisterView(MethodView):
             password = request.form['password']
             role_name = request.form['role']
         
-                        # User checking in database
+            # User checking in database
             if User.query.filter_by(email=email).first():
                 return jsonify({"error": "User already exists!"}), 400
 
-            # Hash the user's password and create a new user
-            hashed_password = generate_password_hash(password)
-            new_user = User(username=username, email=email, password_hash=hashed_password)
-            
-            # Find the role and add to the user
-            role = Role.query.filter_by(slug=role_name).first()  # Query role by slug
-            if role:
-                new_user.roles.append(role)  # Append the actual Role object
+            email_input, status_code = User.email_validation(email_request=email)
+
+            if status_code == 200:
+                # Hash the user's password and create a new user
+                hashed_password = generate_password_hash(password)
+                new_user = User(username=username, email=email, password_hash=hashed_password)
+                
+                # Find the role and add to the user
+                role = Role.query.filter_by(slug=role_name).first()  # Query role by slug
+                if role:
+                    new_user.roles.append(role)  # Append the actual Role object
+                else:
+                    return jsonify({"error": f"Role '{role_name}' not found!"}), 400
+
+                db.session.add(new_user)
+                db.session.commit()
+
+                # return jsonify({"message": "User registered successfully!"}), 201
+                
+                return redirect(url_for('login_view'))
+            # return jsonify({"message": "User registered successfully!"}), 201
             else:
-                return jsonify({"error": f"Role '{role_name}' not found!"}), 400
+                return jsonify(email_input), status_code
 
-            db.session.add(new_user)
-            db.session.commit()
-
-            # return jsonify({"message": "User registered successfully!"}), 201
-            
-            return redirect(url_for('login_view'))
-            # return jsonify({"message": "User registered successfully!"}), 201
         
-        return jsonify({"error": "Invalid input!"}), 400
 
 
 
