@@ -6,6 +6,9 @@ from src.config.settings import db
 
 class UserFetchView(MethodView):
     def get(self, user_id=None):
+        db.create_all()
+
+        print(f'{db}')
         user_fields = ['id', 'username','email', 'password_hash']
 
         if user_id is None:

@@ -1,10 +1,9 @@
 # config/settings.py
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_seeder import FlaskSeeder
-
 import os
 from dotenv import load_dotenv
 from flasgger import Swagger
@@ -67,6 +66,7 @@ def create_app(settings_conf=None):
     conf = settings_conf or os.getenv("FLASK_SETTINGS_MODULE")
     app.config.from_object(conf)
     app.config['DEBUG'] = True
+    app.config['SECRET_KEY'] = "ThisIsASecretKey"
 
 
     # Initialize the app with extensions
@@ -80,13 +80,23 @@ def create_app(settings_conf=None):
     from src.router.Register import RegisterView
     from src.router.Review import ReviewView
     from src.router.TestQuery import TestQueryView
+    from src.models.UserRoleModel import User
+    from flask_login import LoginManager
+
+    login_manager = LoginManager(app)
+    # login_manager.login_view = "/"  # Set the login view endpoint name
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
 
     login_view = LoginView.as_view('login_view')
     app.add_url_rule('/v2/login', view_func=login_view, methods=['GET','POST'])
     app.add_url_rule('/v2/login/<int:user_id>', view_func=login_view, methods=['GET'])
 
     logout_view = LogoutView.as_view('logout_view')
-    app.add_url_rule('/v2/logout', view_func=logout_view, methods=['GET'])
+    app.add_url_rule('/v2/logout', view_func=logout_view, methods=['GET','POST'])
     
     user_fetch_view = UserFetchView.as_view('user_fetch_view')
     app.add_url_rule('/v2/fetch-user', view_func=user_fetch_view, methods=['GET'])
@@ -110,7 +120,8 @@ def create_app(settings_conf=None):
     
     @app.route('/create-all-db')
     def create_all_db():
-        return db.create_all()
+        db.create_all()
+        return jsonify({'message': 'Database created successfully'})
     
     @app.route('/test-template')
     def test_template():

@@ -4,6 +4,7 @@ from src.config.settings import db
 from src.models.Review import Review
 from flasgger import swag_from
 from src.services.AuthService import Authentication
+from flask_login import login_required
 
 class ReviewView(MethodView):
     @swag_from({
@@ -68,6 +69,7 @@ class ReviewView(MethodView):
             }
 
         })
+    @login_required
     @Authentication.token_required
     @Authentication.auth_role('admin')  # Only admin can access this
     def get(self, current_user, review_id=None):
@@ -82,7 +84,7 @@ class ReviewView(MethodView):
             results = [{field: getattr(review, field) for field in review_fields} for review in reviews]
             return jsonify({"Product List": results}), 200
         else: 
-            review = Review.query.filter(Review.id == review_id and Review.is_deleted == False).first()
+            review = Review.query.filter(Review.id == review_id, Review.is_deleted == False).first()
             
             if not review:
                 return jsonify({"error": "Product review not Found"}), 404
@@ -166,6 +168,7 @@ class ReviewView(MethodView):
                 }
             }
     })
+    @login_required
     @Authentication.token_required
     @Authentication.auth_role('admin')  # Only admin can access this
     def post(self, current_user):
@@ -277,11 +280,11 @@ class ReviewView(MethodView):
                 }
             }
     })
-    
+    @login_required
     @Authentication.token_required
     @Authentication.auth_role('admin')  # Only admin can access this
     def put(self, current_user, review_id):
-        review = Review.query.filter(Review.id == review_id and Review.is_deleted == False).first()
+        review = Review.query.filter(Review.id == review_id, Review.is_deleted == False).first()
 
         if not review:
             return jsonify({"error": "Review not found"}), 404
@@ -341,7 +344,7 @@ class ReviewView(MethodView):
                 }
             }
     })
-    
+    @login_required
     @Authentication.token_required
     @Authentication.auth_role('admin')  # Only admin can access this
     def delete(self, current_user, review_id):

@@ -4,6 +4,7 @@ from flasgger import swag_from
 from src.models.UserRoleModel import User, Role, UserRole
 from src.config.settings import db
 from src.services.AuthService import Authentication
+from flask_login import login_user, login_required
 
 from werkzeug.security import check_password_hash
 
@@ -73,6 +74,7 @@ class LoginView(MethodView):
             }
 
         })
+    @login_required
     def get(self, user_id=None):
         user_fields = ['id', 'username','email', 'password_hash']
 
@@ -183,6 +185,8 @@ class LoginView(MethodView):
             # Generate JWT token for the user
 
             if user:
+                login_user(user)
+                response_user = login_user(user)
                 role_slugs = (
                     db.session.query(Role.slug, User.email)
                     .join(UserRole, User.id == UserRole.user_id)
@@ -198,10 +202,11 @@ class LoginView(MethodView):
                     # Create a response
             response = make_response(jsonify({
                 "message": "Login successful!",
-                "token" : token
+                "token" : token,
+                "response_user" : response_user
             }), 200)
 
-            response.set_cookie('jwt_token', token, httponly=True, secure=True)
+            # response.set_cookie('jwt_token', token, httponly=True, secure=True)
 
             return response
         

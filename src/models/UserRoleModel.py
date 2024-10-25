@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
+from flask_login import UserMixin
 from src.config.settings import db
 from email_validator import validate_email, EmailNotValidError
+from flask import jsonify
 
-from flask import jsonify, request
 
-
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "users"
     
     id = db.Column(db.Integer, primary_key=True)
@@ -28,6 +28,11 @@ class User(db.Model):
             .filter(Role.slug == role)
             .count() == 1
         )
+
+    
+    # Flask-Login methods
+    def get_id(self):
+        return str(self.id)
     def email_validation(email_request):
         
         try:

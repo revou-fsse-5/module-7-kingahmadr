@@ -1,6 +1,10 @@
 from src.config.settings import create_app
 
 # Main driver function
+app = create_app()
+
 if __name__ == '__main__':
-    app = create_app()
-    app.run()
+    import hypercorn.asyncio
+    import asyncio
+
+    asyncio.run(hypercorn.asyncio.serve(app, hypercorn.Config()))
