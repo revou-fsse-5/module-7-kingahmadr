@@ -16,9 +16,9 @@ services:
       - apps_network
   
   app-service:
-    # image: "docker.io/sultanahmad/flask-app:assignment-7"
+    image: "docker.io/sultanahmad/flask-app:hypercorn-v1"
     # image: "local-flask-app:assignment-7"
-    image: "local-flask-app:assignment-7"
+    # image: "local-flask-app:hypercorn-v2"
     container_name: "flask_app_container"
     environment:
       DB_URI_PROD: mysql+pymysql://root:KYaMsGN8cHCAnu64@mysql-service:3306/production
