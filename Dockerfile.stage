@@ -28,4 +28,4 @@ RUN pip install hypercorn
 EXPOSE 5000
 
 # Run Hypercorn with app
-CMD ["hypercorn", "app:app", "--bind", "0.0.0.0", "--reload"]
+CMD ["hypercorn", "app:app", "--bind", "0.0.0.0:5000", "--reload"]
