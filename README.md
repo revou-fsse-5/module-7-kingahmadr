@@ -19,9 +19,9 @@ URL:
 ```
 
 ## Authentication
-- Login: Generate JWT token from the authentication users with the specified role, and save the token on the browser client session
+- Login: Generate JWT token from the authentication users with the specified role, and save the user session on the browser client
 - Register: Add user by username, email, password and role
-- Logout: destroy `jwt_token` from the browser client session
+- Logout: destroy session from the browser client
 - Add validation to check the authorize user to work with reviews endpoint (**admin** and **user** role)
 
 ## Deployment
